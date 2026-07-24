@@ -1,0 +1,12 @@
+{
+  "name": "projects-manager",
+  "version": "1.0.0",
+  "description": "Kimi 项目与端口管理中心 —— 所有新项目统一在此申请端口",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix client install && npm --prefix client run build",
+    "start": "npm --prefix server run start",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build"
+  }
+}
