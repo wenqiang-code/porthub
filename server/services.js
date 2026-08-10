@@ -49,6 +49,22 @@ const SERVICE_TYPES = {
       }
     }
   },
+  postgresql: {
+    label: 'PostgreSQL',
+    fields: [
+      { key: 'host', label: '主机', default: '127.0.0.1' },
+      { key: 'port', label: '端口', default: 5432 },
+      { key: 'username', label: '账号', default: 'postgres' },
+      { key: 'password', label: '密码', secret: true },
+      { key: 'sslmode', label: 'SSL 模式', default: 'require' }
+    ],
+    resources: {
+      database: {
+        label: '数据库',
+        allocate: (projectName, taken) => uniqueName(sanitize(projectName), taken)
+      }
+    }
+  },
   redis: {
     label: 'Redis',
     fields: [
@@ -230,6 +246,13 @@ function toEnv(service, resources) {
   }
   for (const [k, v] of Object.entries(resources || {})) {
     env[`${prefix}_${k.toUpperCase()}`] = String(v);
+  }
+  if (service.type === 'postgresql' && service.config && resources && resources.database) {
+    const { host, port, username, password, sslmode = 'require' } = service.config;
+    if (host && port && username && password) {
+      const credentials = `${encodeURIComponent(username)}:${encodeURIComponent(password)}`;
+      env.DATABASE_URL = `postgres://${credentials}@${host}:${port}/${encodeURIComponent(resources.database)}?sslmode=${encodeURIComponent(sslmode)}`;
+    }
   }
   return env;
 }
