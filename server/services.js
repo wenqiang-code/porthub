@@ -192,6 +192,29 @@ const SERVICE_TYPES = {
       }
     }
   },
+  cross_compile: {
+    label: '交叉编译环境',
+    fields: [
+      { key: 'host', label: 'SSH 主机' },
+      { key: 'port', label: 'SSH 端口', default: 22 },
+      { key: 'username', label: 'SSH 账号', default: 'root' },
+      { key: 'password', label: 'SSH 密码', secret: true },
+      { key: 'ssh_host_key_sha256', label: 'SSH 主机指纹' },
+      { key: 'os', label: '操作系统' },
+      { key: 'host_arch', label: '宿主架构' },
+      { key: 'capabilities', label: '能力' },
+      { key: 'toolchains', label: '工具链' },
+      { key: 'default_ndk', label: '默认 NDK 路径' },
+      { key: 'ndk_roots', label: 'NDK 路径' },
+      { key: 'target_abis', label: '目标 ABI' },
+      { key: 'target_triples', label: '目标三元组' },
+      { key: 'cmake_toolchain', label: 'CMake 工具链文件' },
+      { key: 'build_tools', label: '构建工具' },
+      { key: 'workspace_roots', label: '工作目录' },
+      { key: 'notes', label: '备注' }
+    ],
+    resources: {}
+  },
   custom: {
     label: '自定义服务',
     fields: [], // config 为自由 key-value
