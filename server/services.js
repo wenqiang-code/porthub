@@ -33,6 +33,64 @@ function nextInt(taken, min, max) {
   throw new Error(`可用 ${min}-${max} 已分配完`);
 }
 
+/** 生成稳定且不冲突的 Redis 键前缀。 */
+function uniqueRedisPrefix(projectName, taken) {
+  const base = `pm:${sanitize(projectName)}`;
+  for (let index = 1; ; index++) {
+    const candidate = `${base}${index === 1 ? '' : `_${index}`}:`;
+    if (!taken.has(candidate)) return candidate;
+  }
+}
+
+/**
+ * Redis 优先沿用独立逻辑 DB；编号用尽后回退到 DB 0 + 唯一键前缀。
+ * 旧项目无需迁移，新项目数量不再受逻辑 DB 个数限制。
+ */
+function allocateRedisResources(db, service, projectName) {
+  const existingDb = db.allocations.find(
+    a => a.serviceId === service.id && a.projectName === projectName && a.resource === 'db'
+  );
+  if (existingDb) return { db: existingDb.value, isolation: 'database' };
+
+  const existingPrefix = db.allocations.find(
+    a => a.serviceId === service.id && a.projectName === projectName && a.resource === 'prefix'
+  );
+  if (existingPrefix) return { db: '0', prefix: existingPrefix.value, isolation: 'prefix' };
+
+  const configuredCount = Number(service.config && service.config.databases);
+  const databaseCount = Number.isInteger(configuredCount) && configuredCount > 0 ? configuredCount : 16;
+  const takenDatabases = new Set(
+    db.allocations.filter(a => a.serviceId === service.id && a.resource === 'db').map(a => a.value)
+  );
+  for (let index = 0; index < databaseCount; index++) {
+    const value = String(index);
+    if (takenDatabases.has(value)) continue;
+    db.allocations.push({
+      id: crypto.randomUUID(),
+      serviceId: service.id,
+      projectName,
+      resource: 'db',
+      value,
+      createdAt: new Date().toISOString()
+    });
+    return { db: value, isolation: 'database' };
+  }
+
+  const takenPrefixes = new Set(
+    db.allocations.filter(a => a.serviceId === service.id && a.resource === 'prefix').map(a => a.value)
+  );
+  const prefix = uniqueRedisPrefix(projectName, takenPrefixes);
+  db.allocations.push({
+    id: crypto.randomUUID(),
+    serviceId: service.id,
+    projectName,
+    resource: 'prefix',
+    value: prefix,
+    createdAt: new Date().toISOString()
+  });
+  return { db: '0', prefix, isolation: 'prefix' };
+}
+
 const SERVICE_TYPES = {
   mysql: {
     label: 'MySQL',
@@ -70,12 +128,16 @@ const SERVICE_TYPES = {
     fields: [
       { key: 'host', label: '主机', default: '127.0.0.1' },
       { key: 'port', label: '端口', default: 6379 },
-      { key: 'password', label: '密码', secret: true }
+      { key: 'password', label: '密码', secret: true },
+      { key: 'databases', label: '逻辑 DB 数量', default: 16 }
     ],
     resources: {
       db: {
         label: 'DB 索引',
         allocate: (projectName, taken) => nextInt(taken, 0, 15)
+      },
+      prefix: {
+        label: '共享 DB 键前缀'
       }
     }
   },
@@ -230,6 +292,7 @@ function allocateResources(db, service, projectName) {
   const type = SERVICE_TYPES[service.type];
   const result = {};
   if (!type) return result;
+  if (service.type === 'redis') return allocateRedisResources(db, service, projectName);
   for (const [resKey, resDef] of Object.entries(type.resources || {})) {
     const existing = db.allocations.find(
       a => a.serviceId === service.id && a.projectName === projectName && a.resource === resKey
