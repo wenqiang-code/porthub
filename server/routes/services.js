@@ -126,9 +126,16 @@ router.post('/provision', (req, res) => {
     const bundle = store.update(db => {
       // 停用的服务不下发(除非被显式指定)
       const explicit = Array.isArray(serviceIds) && serviceIds.length;
-      let svcs = db.services.filter(s => explicit || s.enabled !== false);
+      let svcs;
       if (explicit) {
-        svcs = svcs.filter(s => serviceIds.includes(s.id) || serviceIds.includes(s.type) || serviceIds.includes(s.name));
+        const selectors = new Set(serviceIds);
+        svcs = db.services.filter(s =>
+          selectors.has(s.id)
+          || selectors.has(s.name)
+          || (selectors.has(s.type) && s.enabled !== false)
+        );
+      } else {
+        svcs = db.services.filter(s => s.enabled !== false);
       }
       const skipped = db.services.filter(s => s.enabled === false && !svcs.includes(s)).map(s => s.name);
       const services = {};
