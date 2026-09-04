@@ -16,13 +16,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
-
 const DEFAULT_DB = {
   // projects: { id, name, path, parentId, port(可为null, 如纯目录根项目), category, status, description, createdAt, updatedAt }
   projects: [],
-  // services: { id, type(mysql/redis/nacos/custom), name, config: {...连接信息}, createdAt }
+  // services: { id, type, name, config, configMeta: { KEY: { category, label, remark } }, configCategories, icon, createdAt }
   services: [],
   // allocations: { id, serviceId, projectName, resource(schema/namespace/db...), value, createdAt }
   allocations: [],
@@ -38,53 +35,59 @@ const DEFAULT_DB = {
   }
 };
 
-let cache = null;
+function createStore(dataDir) {
+  const DATA_DIR = path.resolve(dataDir);
+  const DB_FILE = path.join(DATA_DIR, 'db.json');
+  let cache = null;
 
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+  function ensureDir() {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
 
-function load() {
-  if (cache) return cache;
-  ensureDir();
-  if (!fs.existsSync(DB_FILE)) {
-    cache = JSON.parse(JSON.stringify(DEFAULT_DB));
-    save();
+  function load() {
+    if (cache) return cache;
+    ensureDir();
+    if (!fs.existsSync(DB_FILE)) {
+      cache = JSON.parse(JSON.stringify(DEFAULT_DB));
+      save();
+      return cache;
+    }
+    try {
+      cache = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    } catch (e) {
+      // 文件损坏时备份并重建
+      fs.copyFileSync(DB_FILE, DB_FILE + '.bak.' + Date.now());
+      cache = JSON.parse(JSON.stringify(DEFAULT_DB));
+      save();
+    }
+    // 兼容老数据:补齐 settings / parentId 字段
+    cache.settings = Object.assign({}, DEFAULT_DB.settings, cache.settings || {});
+    if (!Array.isArray(cache.projects)) cache.projects = [];
+    if (!Array.isArray(cache.services)) cache.services = [];
+    if (!Array.isArray(cache.allocations)) cache.allocations = [];
+    cache.projects.forEach(p => { if (p.parentId === undefined) p.parentId = ''; });
     return cache;
   }
-  try {
-    cache = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-  } catch (e) {
-    // 文件损坏时备份并重建
-    fs.copyFileSync(DB_FILE, DB_FILE + '.bak.' + Date.now());
-    cache = JSON.parse(JSON.stringify(DEFAULT_DB));
-    save();
+
+  function save() {
+    ensureDir();
+    const tmp = DB_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(cache, null, 2), 'utf-8');
+    fs.renameSync(tmp, DB_FILE); // 原子写入,避免写一半损坏
   }
-  // 兼容老数据:补齐 settings / parentId 字段
-  cache.settings = Object.assign({}, DEFAULT_DB.settings, cache.settings || {});
-  if (!Array.isArray(cache.projects)) cache.projects = [];
-  if (!Array.isArray(cache.services)) cache.services = [];
-  if (!Array.isArray(cache.allocations)) cache.allocations = [];
-  cache.projects.forEach(p => { if (p.parentId === undefined) p.parentId = ''; });
-  return cache;
+
+  function getDb() {
+    return load();
+  }
+
+  function update(mutator) {
+    const db = load();
+    const result = mutator(db);
+    save();
+    return result;
+  }
+
+  return { getDb, update, DEFAULT_DB };
 }
 
-function save() {
-  ensureDir();
-  const tmp = DB_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(cache, null, 2), 'utf-8');
-  fs.renameSync(tmp, DB_FILE); // 原子写入,避免写一半损坏
-}
-
-function getDb() {
-  return load();
-}
-
-function update(mutator) {
-  const db = load();
-  const result = mutator(db);
-  save();
-  return result;
-}
-
-module.exports = { getDb, update, DEFAULT_DB };
+module.exports = { ...createStore(path.join(__dirname, 'data')), createStore };

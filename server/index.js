@@ -10,7 +10,7 @@ const servicesRouter = require('./routes/services');
 const app = express();
 const PORT = process.env.PM_PORT || 9000; // 管理服务固定端口(默认 9000,已在保留端口中)
 
-app.use(express.json());
+app.use(require('./json-body'));
 
 // 简单请求日志
 app.use((req, res, next) => {
@@ -44,8 +44,10 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
 
 // 统一错误处理
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: err.message || '服务器内部错误' });
+  const status = err.status >= 400 && err.status < 500 ? err.status : 500;
+  // Parser errors may contain configuration values; do not log request bodies.
+  if (status === 500) console.error(err.message);
+  res.status(status).json({ error: status === 413 ? '请求内容过大' : status === 400 ? '请求数据无效' : '服务器内部错误' });
 });
 
 // 启动前确保数据库文件存在
