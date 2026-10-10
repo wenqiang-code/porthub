@@ -11,6 +11,7 @@
         <el-form-item label="管理员密码">
           <el-input v-model="form.password" type="password" show-password autocomplete="current-password" placeholder="请输入管理员密码" @keyup.enter="submit" />
         </el-form-item>
+        <el-checkbox v-model="form.remember">记住登录状态（30 天）</el-checkbox>
         <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
         <el-button class="submit" type="primary" native-type="submit" :loading="loading">登录</el-button>
       </el-form>
@@ -24,7 +25,7 @@ import { useRouter } from 'vue-router';
 import { api } from '../api';
 
 const router = useRouter();
-const form = ref({ username: '', password: '' });
+const form = ref({ username: '', password: '', remember: false });
 const loading = ref(false);
 const error = ref('');
 

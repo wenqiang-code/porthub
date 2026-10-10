@@ -40,6 +40,7 @@
         </div>
         <div class="header-right">
           <span class="reserved-badge">管理服务端口 <b class="mono">9000</b> · 保留</span>
+          <el-button v-if="$route.path !== '/login'" text @click="passwordVisible = true">修改密码</el-button>
           <el-button v-if="$route.path !== '/login'" text @click="logout">退出登录</el-button>
         </div>
       </el-header>
@@ -50,16 +51,35 @@
       </el-main>
     </el-container>
   </el-container>
+  <el-dialog v-model="passwordVisible" title="修改管理员密码" width="420px" :close-on-click-modal="false">
+    <el-form :model="passwordForm" label-width="100px">
+      <el-form-item label="当前密码"><el-input v-model="passwordForm.currentPassword" type="password" show-password /></el-form-item>
+      <el-form-item label="新密码"><el-input v-model="passwordForm.newPassword" type="password" show-password /></el-form-item>
+      <el-form-item label="确认新密码"><el-input v-model="passwordForm.confirmPassword" type="password" show-password @keyup.enter="changePassword" /></el-form-item>
+    </el-form>
+    <template #footer><el-button @click="passwordVisible = false">取消</el-button><el-button type="primary" :loading="passwordLoading" @click="changePassword">保存</el-button></template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { Folder, Connection, Setting, Box } from '@element-plus/icons-vue';
 import { api } from './api';
+import { ElMessage } from 'element-plus';
 
 const route = useRoute();
+const passwordVisible = ref(false);
+const passwordLoading = ref(false);
+const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword: '' });
 async function logout() { await api.logout(); window.location.assign('/login'); }
+async function changePassword() {
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) return ElMessage.error('两次输入的新密码不一致');
+  passwordLoading.value = true;
+  try { await api.changePassword(passwordForm.value); ElMessage.success('密码已修改，请重新登录'); passwordVisible.value = false; passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }; window.location.assign('/login'); }
+  catch (e) { ElMessage.error(e.message); }
+  finally { passwordLoading.value = false; }
+}
 const title = computed(() => ({
   '/projects': '项目管理',
   '/ports': '端口池总览',

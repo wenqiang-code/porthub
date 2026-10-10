@@ -17,6 +17,7 @@ export const api = {
   login: data => request('POST', '/api/auth/login', data),
   logout: () => request('POST', '/api/auth/logout'),
   me: () => request('GET', '/api/auth/me'),
+  changePassword: data => request('POST', '/api/auth/password', data),
   // 项目
   listProjects: (params = {}) => request('GET', '/api/projects?' + new URLSearchParams(params)),
   createProject: data => request('POST', '/api/projects', data),

@@ -21,6 +21,7 @@ const DEFAULT_DB = {
   projects: [],
   // services: { id, type, name, config, configMeta: { KEY: { category, label, remark } }, configCategories, icon, createdAt }
   services: [],
+  auth: { username: '', passwordHash: '' },
   // serviceTypes: { value, label } // 用户手动添加的服务类型
   serviceTypes: [],
   // allocations: { id, serviceId, projectName, resource(schema/namespace/db...), value, createdAt }
@@ -67,6 +68,7 @@ function createStore(dataDir) {
     if (!Array.isArray(cache.projects)) cache.projects = [];
     if (!Array.isArray(cache.services)) cache.services = [];
     if (!Array.isArray(cache.serviceTypes)) cache.serviceTypes = [];
+    cache.auth = Object.assign({}, DEFAULT_DB.auth, cache.auth || {});
     if (!Array.isArray(cache.allocations)) cache.allocations = [];
     cache.projects.forEach(p => { if (p.parentId === undefined) p.parentId = ''; });
     return cache;
