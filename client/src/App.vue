@@ -15,13 +15,13 @@
         <router-link to="/projects" class="nav-item" :class="{ active: $route.path === '/projects' }">
           <el-icon :size="17"><Folder /></el-icon><span>项目管理</span>
         </router-link>
-        <router-link to="/ports" class="nav-item" :class="{ active: $route.path === '/ports' }">
-          <el-icon :size="17"><Connection /></el-icon><span>端口池</span>
-        </router-link>
         <router-link to="/services" class="nav-item" :class="{ active: $route.path === '/services' }">
           <el-icon :size="17"><Box /></el-icon><span>公共服务</span>
         </router-link>
         <div class="nav-label">系统</div>
+        <router-link to="/ports" class="nav-item" :class="{ active: $route.path === '/ports' }">
+          <el-icon :size="17"><Connection /></el-icon><span>端口池</span>
+        </router-link>
         <router-link to="/settings" class="nav-item" :class="{ active: $route.path === '/settings' }">
           <el-icon :size="17"><Setting /></el-icon><span>分配策略</span>
         </router-link>

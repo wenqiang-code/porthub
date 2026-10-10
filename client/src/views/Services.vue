@@ -113,7 +113,7 @@
             </nav>
             <div class="category-actions">
               <el-button text :disabled="!activeCategory" @click="editCategory">重命名</el-button>
-              <el-button text type="danger" :disabled="!activeCategory || countRows(activeCategory) > 0" @click="removeCategory">删除空分类</el-button>
+              <el-button text type="danger" :disabled="!activeCategory" @click="removeCategory">删除分类</el-button>
             </div>
           </aside>
           <section class="config-panel" :aria-label="`${categoryLabel(activeCategory)}配置项`">
@@ -259,8 +259,21 @@ async function editCategory() {
   const name = await askCategory('重命名分类', previous);
   if (name) activeCategory.value = renameCategory(draft.value, previous, name);
 }
-function removeCategory() {
-  deleteCategory(draft.value, activeCategory.value);
+async function removeCategory() {
+  const category = activeCategory.value;
+  if (!category) return;
+  const rows = countRows(category);
+  if (rows) {
+    try {
+      await ElMessageBox.confirm(
+        `分类「${category}」中有 ${rows} 项配置，删除后将移到“未分类”，是否继续？`,
+        '删除分类',
+        { type: 'warning', confirmButtonText: '删除并移动配置', cancelButtonText: '取消' }
+      );
+    } catch { return; }
+    for (const row of draft.value.rows) if (row.category === category) row.category = '';
+  }
+  deleteCategory(draft.value, category);
   activeCategory.value = '';
 }
 async function addRow() {

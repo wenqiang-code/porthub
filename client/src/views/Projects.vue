@@ -56,7 +56,7 @@
     <div class="table-card">
     <el-table
       ref="tableRef" v-loading="loading" row-key="id" :size="tableSize"
-      :data="treeData" :tree-props="{ children: 'children' }" default-expand-all
+      :data="treeData" :tree-props="{ children: 'children' }"
       :height="tableHeight === 'auto' ? '100%' : undefined"
       :max-height="tableHeight === 'auto' ? undefined : tableHeight"
       :class="'density-' + density"
