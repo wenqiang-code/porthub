@@ -57,7 +57,7 @@
 
     <!-- 新建/编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="editing ? '编辑服务' : '添加服务'" class="service-editor"
-      :width="form.type === 'custom' ? '1120px' : '760px'" top="16px" :close-on-click-modal="false"
+      :width="isFlexibleType ? '1120px' : '760px'" top="16px" :close-on-click-modal="false"
       :close-on-press-escape="!submitting" :show-close="!submitting" @closed="invalidateIcon">
       <el-form :model="form" label-width="80px" class="service-form" :disabled="submitting">
         <div class="service-basics">
