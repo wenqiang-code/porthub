@@ -1,0 +1,18 @@
+services:
+  projectsmanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: projectsmanager:latest
+    container_name: projectsmanager
+    ports:
+      - "9000:9000"
+    environment:
+      PM_PORT: 9000
+      NODE_ENV: production
+    volumes:
+      - projectsmanager-data:/app/server/data
+    restart: unless-stopped
+
+volumes:
+  projectsmanager-data:

@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.run
+node_modules
+client/node_modules
+server/node_modules
+client/dist
+server/data
+*.log
+Dockerfile
+docker-compose.yml
+README.md

@@ -33,6 +33,36 @@ npm start
 
 打开 http://localhost:9000 即可使用 Web 界面。
 
+### Docker 部署
+
+使用 Docker Compose 构建并启动，项目数据会保存到 `projectsmanager-data` 卷中：
+
+```bash
+docker compose up -d --build
+```
+
+打开 http://localhost:9000 即可访问。停止容器但保留数据：
+
+```bash
+docker compose down
+```
+
+如需修改管理服务端口，可同时修改 `docker-compose.yml` 中的端口映射和 `PM_PORT`，例如 `9001:9001` 与 `PM_PORT: 9001`。
+
+### 一键启动 / 停止 / 重启(后台运行)
+
+根目录提供一键脚本,双击 `.bat` 或命令行执行均可:
+
+| 文件 | 作用 |
+|---|---|
+| `start.bat` | 后台启动(隐藏窗口,日志写入 `.run/`) |
+| `stop.bat` | 停止服务 |
+| `restart.bat` | 重启服务 |
+| `status.bat` | 查看运行状态与健康检查 |
+
+也可以直接用 PowerShell 调用: `powershell -NoProfile -ExecutionPolicy Bypass -File .\pmctl.ps1 start\|stop\|restart\|status`。
+端口可用环境变量 `PM_PORT` 覆盖(默认 9000)。
+
 开发模式(前端热更新,端口 5173 代理到 9000):
 
 ```powershell
