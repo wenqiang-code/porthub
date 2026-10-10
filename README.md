@@ -172,6 +172,7 @@ projectsmanager/
 ├── client/              # Vue3 + Element Plus 前端
 │   └── src/views/       # Projects / Ports / Settings 三个页面
 ├── cli/portctl.js       # Kimi 申请端口的命令行工具
+├── pmctl.ps1            # 一键启动/停止/重启/状态脚本(start.bat 等为其双击入口)
 ├── AGENTS.md            # 给 Kimi 的端口申请规范
 └── package.json         # 便捷脚本
 ```

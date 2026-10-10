@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: projectsmanager:latest
+    image: porthub:1.0.0
     container_name: projectsmanager
     ports:
       - "9000:9000"

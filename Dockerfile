@@ -10,6 +10,10 @@ RUN npm run build
 # 生产运行阶段：Express 同时提供 API 和前端静态文件
 FROM node:20-alpine
 
+ARG APP_VERSION=1.0.0
+LABEL org.opencontainers.image.title="PortHub" \
+      org.opencontainers.image.version="$APP_VERSION"
+
 WORKDIR /app
 RUN apk add --no-cache lsof
 
