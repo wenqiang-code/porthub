@@ -239,20 +239,23 @@ body {
 }
 .header-title h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
 .header-sub { font-size: 12px; color: var(--pm-text-3); }
+.header-right { display: flex; align-items: center; gap: 8px; min-height: 32px; white-space: nowrap; }
 .reserved-badge {
   font-size: 12px;
   color: var(--pm-text-2);
   background: var(--pm-bg);
   border: 1px solid var(--pm-border);
-  padding: 5px 10px;
+  padding: 6px 11px;
   border-radius: 999px;
+  line-height: 1.35;
 }
 .reserved-badge b { color: var(--pm-text); }
 .account-trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 10px;
+  min-height: 30px;
+  padding: 6px 11px;
   border: 1px solid var(--pm-border);
   border-radius: 999px;
   background: var(--pm-surface);
