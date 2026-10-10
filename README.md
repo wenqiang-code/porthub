@@ -1,4 +1,6 @@
-# Projects Manager —— Kimi 项目与端口管理中心
+# PortHub —— Kimi 项目与端口管理中心
+
+项目仓库：[wenqiang-code/porthub](https://github.com/wenqiang-code/porthub)
 
 解决 Kimi 每生成一个新项目就占用一个新端口、端口越来越乱的问题:
 **所有新项目统一在这里登记并申请端口**,分配规则集中管理、可配置、可扩展。
