@@ -23,6 +23,8 @@ export const api = {
   // 公共服务
   listServices: () => request('GET', '/api/services'),
   serviceTypes: () => request('GET', '/api/services/types'),
+  createServiceType: label => request('POST', '/api/services/types', { label }),
+  deleteServiceType: value => request('DELETE', `/api/services/types/${encodeURIComponent(value)}`),
   createService: data => request('POST', '/api/services', data),
   updateService: (id, data) => request('PUT', `/api/services/${id}`, data),
   deleteService: id => request('DELETE', `/api/services/${id}`),

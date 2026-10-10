@@ -75,9 +75,13 @@
           </div>
           <div class="basic-fields">
             <el-form-item label="类型" required>
-              <el-select v-model="form.type" style="width: 100%" :disabled="!!editing" @change="applyDefaults">
+              <div class="type-picker">
+                <el-select v-model="form.type" style="flex: 1" :disabled="!!editing" @change="applyDefaults">
                 <el-option v-for="t in types" :key="t.value" :label="t.label" :value="t.value" />
-              </el-select>
+                </el-select>
+                <el-button v-if="!editing" :icon="Plus" aria-label="添加服务类型" @click="addServiceType">添加类型</el-button>
+                <el-button v-if="!editing" text type="danger" :disabled="!currentType?.custom" @click="removeServiceType">删除</el-button>
+              </div>
             </el-form-item>
             <el-form-item label="名称" required>
               <el-input v-model="form.name" aria-label="服务名称" placeholder="如 本地MySQL" />
@@ -85,7 +89,7 @@
           </div>
         </div>
         <el-alert v-if="formError" :title="formError" type="error" :closable="false" show-icon class="form-error" />
-        <div v-if="form.type !== 'custom'" class="builtin-config">
+        <div v-if="!isFlexibleType" class="builtin-config">
           <el-form-item v-for="f in currentFields" :key="f.key" :label="f.label">
             <el-input
               v-model="form.config[f.key]"
@@ -299,6 +303,8 @@ const allocations = ref([]);
 
 const currentFields = computed(() => (types.value.find(t => t.value === form.value.type) || {}).fields || []);
 const currentResources = computed(() => (types.value.find(t => t.value === form.value.type) || {}).resources || []);
+const currentType = computed(() => types.value.find(t => t.value === form.value.type));
+const isFlexibleType = computed(() => !!currentType.value?.custom || form.value.type === 'custom');
 
 async function load() {
   loading.value = true;
@@ -321,6 +327,38 @@ function applyDefaults() {
   activeCategory.value = '';
   formError.value = '';
   invalidRowId.value = null;
+}
+
+async function addServiceType() {
+  try {
+    const { value } = await ElMessageBox.prompt('类型名称会显示在服务类型下拉框中', '添加服务类型', {
+      confirmButtonText: '添加', cancelButtonText: '取消', inputPlaceholder: '如 Elasticsearch 集群'
+    });
+    const label = value.trim();
+    if (!label) return;
+    const created = await api.createServiceType(label);
+    types.value = await api.serviceTypes();
+    form.value.type = created.value;
+    applyDefaults();
+    ElMessage.success('服务类型已添加');
+  } catch (e) {
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e.message || '添加服务类型失败');
+  }
+}
+
+async function removeServiceType() {
+  const type = currentType.value;
+  if (!type?.custom) return;
+  try {
+    await ElMessageBox.confirm(`删除服务类型「${type.label}」？`, '删除服务类型', { type: 'warning' });
+    await api.deleteServiceType(type.value);
+    types.value = await api.serviceTypes();
+    form.value.type = types.value.find(item => !item.custom)?.value || 'mysql';
+    applyDefaults();
+    ElMessage.success('服务类型已删除');
+  } catch (e) {
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e.message || '删除服务类型失败');
+  }
 }
 
 function openCreate() {
@@ -350,7 +388,7 @@ async function save() {
   if (!form.value.name.trim()) { formError.value = '请填写服务名称'; return; }
   try {
     const body = { type: form.value.type, name: form.value.name, config: form.value.config, icon: form.value.icon };
-    if (form.value.type === 'custom') {
+    if (isFlexibleType.value) {
       Object.assign(body, serializeDraft(draft.value.rows, draft.value.categories));
     }
     submitting.value = true;
@@ -509,6 +547,8 @@ onMounted(load);
 
 .service-form { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
 .service-basics { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 20px; padding: 0 0 16px; }
+.type-picker { display: flex; align-items: center; gap: 8px; width: 100%; }
+.type-picker .el-button { flex-shrink: 0; }
 .icon-editor { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .icon-preview { display: flex; justify-content: center; align-items: center; background: var(--pm-bg); border: 1px solid var(--pm-border); width: 60px; height: 60px; border-radius: 12px; flex-shrink: 0; }
 .icon-actions { display: flex; flex-direction: column; gap: 6px; }

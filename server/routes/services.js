@@ -7,25 +7,74 @@ const { servicePatch } = require('../service-validation');
 function createServicesRouter(store) {
   const router = express.Router();
 
+  function customTypes(db) {
+    return (db.serviceTypes || []).map(t => ({
+      value: t.value, label: t.label, fields: [], resources: [], custom: true
+    }));
+  }
+
+  function hasType(db, value) {
+    return Object.hasOwn(SERVICE_TYPES, value) || (db.serviceTypes || []).some(t => t.value === value);
+  }
+
   /** GET /api/services/types — 服务类型注册表(前端动态表单用) */
   router.get('/types', (req, res) => {
-    res.json(
-      Object.entries(SERVICE_TYPES).map(([value, t]) => ({
+    const db = store.getDb();
+    res.json([
+      ...Object.entries(SERVICE_TYPES).map(([value, t]) => ({
         value,
         label: t.label,
         fields: t.fields,
-        resources: Object.entries(t.resources || {}).map(([k, r]) => ({ key: k, label: r.label }))
-      }))
-    );
+        resources: Object.entries(t.resources || {}).map(([k, r]) => ({ key: k, label: r.label })),
+        custom: false
+      })),
+      ...customTypes(db)
+    ]);
+  });
+
+  /** POST /api/services/types — 新增用户服务类型 */
+  router.post('/types', (req, res) => {
+    const label = String(req.body?.label || '').trim();
+    if (!label) return res.status(400).json({ error: '类型名称不能为空' });
+    const normalized = label.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+    if (!normalized) return res.status(400).json({ error: '类型名称必须包含中文或字母数字' });
+    const db = store.getDb();
+    if (Object.values(SERVICE_TYPES).some(t => t.label === label) || (db.serviceTypes || []).some(t => t.label === label)) {
+      return res.status(409).json({ error: `类型「${label}」已存在` });
+    }
+    let value = `custom_${normalized}`;
+    let suffix = 2;
+    while (hasType(db, value)) value = `custom_${normalized}_${suffix++}`;
+    const type = store.update(current => {
+      const item = { value, label };
+      current.serviceTypes.push(item);
+      return item;
+    });
+    res.status(201).json({ ...type, fields: [], resources: [], custom: true });
+  });
+
+  /** DELETE /api/services/types/:value — 删除未使用的用户服务类型 */
+  router.delete('/types/:value', (req, res) => {
+    if (Object.hasOwn(SERVICE_TYPES, req.params.value)) return res.status(400).json({ error: '内置服务类型不可删除' });
+    const result = store.update(db => {
+      const idx = (db.serviceTypes || []).findIndex(t => t.value === req.params.value);
+      if (idx < 0) return null;
+      if (db.services.some(s => s.type === req.params.value)) return { used: true };
+      return { type: db.serviceTypes.splice(idx, 1)[0] };
+    });
+    if (!result) return res.status(404).json({ error: '服务类型不存在' });
+    if (result.used) return res.status(409).json({ error: '该类型已有服务在使用，不能删除' });
+    res.json({ ok: true, type: result.type });
   });
 
   /** GET /api/services — 服务列表(含分配数) */
   router.get('/', (req, res) => {
     const db = store.getDb();
+    const labels = new Map(customTypes(db).map(t => [t.value, t.label]));
     res.json(db.services.map(s => ({
       enabled: true,
       ...s,
-      typeLabel: (SERVICE_TYPES[s.type] || {}).label || s.type,
+      typeLabel: (SERVICE_TYPES[s.type] || {}).label || labels.get(s.type) || s.type,
       allocCount: db.allocations.filter(a => a.serviceId === s.id).length
     })));
   });
@@ -33,7 +82,7 @@ function createServicesRouter(store) {
   /** POST /api/services — 新增服务 { type, name, config, enabled? } */
   router.post('/', (req, res) => {
     const { type, name } = req.body || {};
-    if (!Object.hasOwn(SERVICE_TYPES, type)) return res.status(400).json({ error: `不支持的服务类型 "${type}"` });
+    if (!hasType(store.getDb(), type)) return res.status(400).json({ error: `不支持的服务类型 "${type}"` });
     if (!name || !String(name).trim()) return res.status(400).json({ error: 'name 为必填项' });
     let patch;
     try { patch = servicePatch(req.body); }
