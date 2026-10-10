@@ -1,5 +1,6 @@
 <template>
-  <el-container class="layout">
+  <router-view v-if="$route.path === '/login'" />
+  <el-container v-else class="layout">
     <el-aside width="232px" class="aside">
       <div class="logo">
         <span class="logo-mark">
