@@ -39,13 +39,13 @@
           <span class="header-sub">{{ subtitle }}</span>
         </div>
         <div class="header-right">
+          <span class="reserved-badge">管理服务端口 <b class="mono">9000</b> · 保留</span>
           <el-dropdown v-if="$route.path !== '/login'" trigger="click" @command="handleAccountCommand">
             <button type="button" class="account-trigger" aria-label="打开管理员菜单">
               <el-icon><UserFilled /></el-icon><span>管理员</span><el-icon class="account-arrow"><ArrowDown /></el-icon>
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item disabled>管理服务端口 <b class="mono">9000</b> · 保留</el-dropdown-item>
                 <el-dropdown-item command="password">修改密码</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
