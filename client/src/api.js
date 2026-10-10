@@ -6,11 +6,17 @@ async function request(method, url, body) {
     body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && !url.startsWith('/api/auth/')) {
+    window.location.assign('/login');
+  }
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
 }
 
 export const api = {
+  login: data => request('POST', '/api/auth/login', data),
+  logout: () => request('POST', '/api/auth/logout'),
+  me: () => request('GET', '/api/auth/me'),
   // 项目
   listProjects: (params = {}) => request('GET', '/api/projects?' + new URLSearchParams(params)),
   createProject: data => request('POST', '/api/projects', data),

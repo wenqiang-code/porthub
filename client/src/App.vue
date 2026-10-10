@@ -39,6 +39,7 @@
         </div>
         <div class="header-right">
           <span class="reserved-badge">管理服务端口 <b class="mono">9000</b> · 保留</span>
+          <el-button v-if="$route.path !== '/login'" text @click="logout">退出登录</el-button>
         </div>
       </el-header>
       <el-main class="main">
@@ -54,8 +55,10 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { Folder, Connection, Setting, Box } from '@element-plus/icons-vue';
+import { api } from './api';
 
 const route = useRoute();
+async function logout() { await api.logout(); window.location.assign('/login'); }
 const title = computed(() => ({
   '/projects': '项目管理',
   '/ports': '端口池总览',

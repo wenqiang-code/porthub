@@ -10,6 +10,9 @@ services:
     environment:
       PM_PORT: 9000
       NODE_ENV: production
+      PM_ADMIN_USERNAME: ${PM_ADMIN_USERNAME:-admin}
+      PM_ADMIN_PASSWORD: ${PM_ADMIN_PASSWORD:-admin}
+      PM_AUTH_SECRET: ${PM_AUTH_SECRET:-change-this-secret}
     volumes:
       - projectsmanager-data:/app/server/data
     restart: unless-stopped

@@ -33,6 +33,8 @@ npm start
 
 打开 http://localhost:9000 即可使用 Web 界面。
 
+首次登录默认账号为 `admin`，密码为 `admin`。生产部署请通过 `PM_ADMIN_USERNAME`、`PM_ADMIN_PASSWORD` 和 `PM_AUTH_SECRET` 环境变量覆盖默认值，避免使用默认凭据。
+
 ### Docker 部署
 
 使用 Docker Compose 构建并启动，项目数据会保存到 `projectsmanager-data` 卷中：

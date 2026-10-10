@@ -6,6 +6,8 @@ const projectsRouter = require('./routes/projects');
 const portsRouter = require('./routes/ports');
 const settingsRouter = require('./routes/settings');
 const servicesRouter = require('./routes/services');
+const authRouter = require('./routes/auth');
+const { requireAuth } = require('./auth');
 
 const app = express();
 const PORT = process.env.PM_PORT || 9000; // 管理服务固定端口(默认 9000,已在保留端口中)
@@ -22,6 +24,8 @@ app.use((req, res, next) => {
 });
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+app.use('/api/auth', authRouter);
+app.use('/api', requireAuth);
 app.use('/api/projects', projectsRouter);
 app.use('/api/ports', portsRouter);
 app.use('/api/settings', settingsRouter);

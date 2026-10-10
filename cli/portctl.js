@@ -25,6 +25,7 @@
  * 输出最后一行始终是机器可读的 JSON,便于脚本解析。
  */
 const API = process.env.PM_API || 'http://localhost:9000';
+let authToken = process.env.PM_AUTH_TOKEN || '';
 
 function parseArgs(argv) {
   const args = { _: [] };
@@ -46,9 +47,16 @@ function parseArgs(argv) {
 }
 
 async function call(method, url, body) {
+  if (!authToken && url !== '/api/auth/login') {
+    const login = await fetch(API + '/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: process.env.PM_ADMIN_USERNAME || 'admin', password: process.env.PM_ADMIN_PASSWORD || 'admin' })
+    });
+    if (login.ok) authToken = (login.headers.get('set-cookie') || '').match(/pm_session=([^;]+)/)?.[1] || '';
+  }
   const res = await fetch(API + url, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(authToken ? { Authorization: `Bearer ${decodeURIComponent(authToken)}` } : {}) },
     body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
