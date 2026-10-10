@@ -39,9 +39,18 @@
           <span class="header-sub">{{ subtitle }}</span>
         </div>
         <div class="header-right">
-          <span class="reserved-badge">管理服务端口 <b class="mono">9000</b> · 保留</span>
-          <el-button v-if="$route.path !== '/login'" text @click="passwordVisible = true">修改密码</el-button>
-          <el-button v-if="$route.path !== '/login'" text @click="logout">退出登录</el-button>
+          <el-dropdown v-if="$route.path !== '/login'" trigger="click" @command="handleAccountCommand">
+            <button type="button" class="account-trigger" aria-label="打开管理员菜单">
+              <el-icon><UserFilled /></el-icon><span>管理员</span><el-icon class="account-arrow"><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>管理服务端口 <b class="mono">9000</b> · 保留</el-dropdown-item>
+                <el-dropdown-item command="password">修改密码</el-dropdown-item>
+                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </el-header>
       <el-main class="main">
@@ -64,7 +73,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { Folder, Connection, Setting, Box } from '@element-plus/icons-vue';
+import { Folder, Connection, Setting, Box, UserFilled, ArrowDown } from '@element-plus/icons-vue';
 import { api } from './api';
 import { ElMessage } from 'element-plus';
 
@@ -73,6 +82,10 @@ const passwordVisible = ref(false);
 const passwordLoading = ref(false);
 const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword: '' });
 async function logout() { await api.logout(); window.location.assign('/login'); }
+function handleAccountCommand(command) {
+  if (command === 'password') passwordVisible.value = true;
+  if (command === 'logout') logout();
+}
 async function changePassword() {
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) return ElMessage.error('两次输入的新密码不一致');
   passwordLoading.value = true;
@@ -235,6 +248,21 @@ body {
   border-radius: 999px;
 }
 .reserved-badge b { color: var(--pm-text); }
+.account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--pm-border);
+  border-radius: 999px;
+  background: var(--pm-surface);
+  color: var(--pm-text-2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.account-trigger:hover { color: var(--pm-text); border-color: var(--pm-accent); }
+.account-arrow { margin-left: 2px; font-size: 12px; }
 
 /* ---------- 主区域 ---------- */
 .main {
