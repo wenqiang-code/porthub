@@ -1,13 +1,13 @@
-# PortHub —— Kimi 项目与端口管理中心
+# PortHub —— AI 生成项目与端口管理中心
 
 项目仓库：[wenqiang-code/porthub](https://github.com/wenqiang-code/porthub)
 
-解决 Kimi 每生成一个新项目就占用一个新端口、端口越来越乱的问题:
+解决使用 AI 工具生成项目时端口不断增加、难以统一管理的问题:
 **所有新项目统一在这里登记并申请端口**,分配规则集中管理、可配置、可扩展。
 
 ## 功能
 
-- **层级模型**: 项目(Kimi 工作的根目录) → 子项目(模块,各自可有端口);根项目可不占端口,删除根项目级联删除子项目并回收所有端口
+- **层级模型**: 项目(AI 工具工作的根目录) → 子项目(模块,各自可有端口);根项目可不占端口,删除根项目级联删除子项目并回收所有端口
 - **项目管理**: 树形表格展示层级;创建/编辑/删除项目,记录名称、父项目、类别、路径、描述、状态、端口
 - **批量管理**: 多选项目后批量删除(回收端口)/挂载到项目/修改状态/修改类别;CLI 可按 id 列表、父项目或全部项目批量操作
 - **公共服务**: 统一维护 MySQL/Redis/Nacos 等服务的连接信息;项目创建时一键获取配置,mysql schema、nacos namespace、redis db 等动态资源按项目自动分配(幂等、互不冲突);类型注册表可扩展
@@ -19,9 +19,9 @@
   - 扩展新策略只需在 `server/allocator.js` 的 `STRATEGIES` 中加一个函数
 - **端口池总览**: 各分段使用率可视化,端口占用检查(含本机实际占用探测)
 - **保留端口**: 永不分配(如管理服务自身的 9000)
-- **注册纳管**: Kimi 运行/操作任何项目前,先把项目当前端口注册进池;端口合规则原样登记,冲突或不合规则自动调整并返回新端口
+- **注册纳管**: AI 工具运行/操作任何项目前,先把项目当前端口注册进池;端口合规则原样登记,冲突或不合规则自动调整并返回新端口
 - **扫描导入**: 扫描磁盘目录发现所有项目(解析 .env / vite.config / package.json scripts 探测端口),一键批量纳管,冲突自动调整
-- **CLI 工具**: `cli/portctl.js`,Kimi 通过它申请/注册/释放端口,输出机器可读 JSON
+- **CLI 工具**: `cli/portctl.js`,AI 工具通过它申请/注册/释放端口,输出机器可读 JSON
 
 ## 快速开始
 
@@ -76,7 +76,7 @@ npm run dev:server   # 终端 1
 npm run dev:client   # 终端 2
 ```
 
-## Kimi 申请端口的方式
+## AI 工具申请端口的方式
 
 ### 方式一: CLI(推荐)
 
@@ -177,9 +177,9 @@ projectsmanager/
 │   └── routes/          # projects / ports / settings / services 路由
 ├── client/              # Vue3 + Element Plus 前端
 │   └── src/views/       # Projects / Ports / Settings 三个页面
-├── cli/portctl.js       # Kimi 申请端口的命令行工具
+├── cli/portctl.js       # AI 工具申请端口的命令行工具
 ├── pmctl.ps1            # 一键启动/停止/重启/状态脚本(start.bat 等为其双击入口)
-├── AGENTS.md            # 给 Kimi 的端口申请规范
+├── AGENTS.md            # 给 AI 工具的端口申请规范
 └── package.json         # 便捷脚本
 ```
 
@@ -193,5 +193,5 @@ projectsmanager/
 
 ## 让规则真正生效
 
-把根目录 `AGENTS.md` 的内容复制到 Kimi 的全局指令(如 `C:\Users\<你>\.kimi\AGENTS.md`)
-或每个项目工作区的 `AGENTS.md` 中,Kimi 在创建任何新项目前就会先申请端口。
+把根目录 `AGENTS.md` 的内容复制到 AI 工具的全局指令(如 `C:\Users\<你>\.kimi\AGENTS.md`)
+或每个项目工作区的 `AGENTS.md` 中,AI 工具在创建任何新项目前就会先申请端口。
