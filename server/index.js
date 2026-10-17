@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const store = require('./store');
 
@@ -28,7 +29,11 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/services', servicesRouter);
 
 // 生产模式:托管前端构建产物
-const distDir = path.join(__dirname, '..', 'client', 'dist');
+const buildCandidates = [
+  path.join(__dirname, '..', '.codex', 'build', 'client-dist'),
+  path.join(__dirname, '..', 'client', 'dist')
+];
+const distDir = buildCandidates.find(candidate => fs.existsSync(candidate)) || buildCandidates[0];
 app.use(express.static(distDir, {
   setHeaders(res, filePath) {
     if (filePath.endsWith('.html')) {
