@@ -35,7 +35,7 @@ npm start
 
 打开 http://localhost:9000 即可使用 Web 界面。
 
-首次登录默认账号为 `admin`，密码为 `admin`。生产部署请通过 `PM_ADMIN_USERNAME`、`PM_ADMIN_PASSWORD` 和 `PM_AUTH_SECRET` 环境变量覆盖默认值，避免使用默认凭据。
+管理界面无需登录即可使用，部署时请通过网络访问控制或反向代理限制管理端口的访问范围。
 
 ### Docker 部署
 
@@ -53,7 +53,7 @@ docker compose down
 
 如需修改管理服务端口，可同时修改 `docker-compose.yml` 中的端口映射和 `PM_PORT`，例如 `9001:9001` 与 `PM_PORT: 9001`。
 
-当前镜像版本为 `porthub:1.0.1`。
+当前镜像版本为 `porthub:1.0.2`。
 
 ### 一键启动 / 停止 / 重启(后台运行)
 

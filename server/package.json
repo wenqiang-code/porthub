@@ -1,6 +1,6 @@
 {
   "name": "projects-manager-server",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "项目与端口管理服务 - 后端",
   "main": "index.js",
   "scripts": {
