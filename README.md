@@ -37,6 +37,8 @@ npm start
 
 管理界面无需登录即可使用，部署时请通过网络访问控制或反向代理限制管理端口的访问范围。
 
+当前版本为 `1.0.2`，API 默认不要求登录验证。
+
 ### Docker 部署
 
 使用 Docker Compose 构建并启动，项目数据会保存到 `projectsmanager-data` 卷中：
@@ -75,6 +77,8 @@ docker compose down
 npm run dev:server   # 终端 1
 npm run dev:client   # 终端 2
 ```
+
+使用 Codex 构建或验证时，前端产物可放在 `.codex/build/client-dist/`；服务端会优先读取该目录，Docker 构建则在镜像内部生成并使用 `client/dist/`。
 
 ## AI 工具申请端口的方式
 
